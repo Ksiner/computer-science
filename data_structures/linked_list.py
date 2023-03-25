@@ -152,16 +152,26 @@ class DoublyLinkedList(Generic[T]):
 
         return self
 
-    def search(
+    def search_node(
         self, search_func: Union[Callable[[T], bool], None] = None, value: Union[T, None] = None
-    ) -> Union[T, None]:
+    ) -> Union[Node[T], None]:
         current_node = self._head
 
         while current_node is not None:
             if (search_func and search_func(current_node.value)) or (current_node.value == value):
-                return current_node.value
+                return current_node
 
             current_node = current_node.next
+
+        return None
+
+    def search(
+        self, search_func: Union[Callable[[T], bool], None] = None, value: Union[T, None] = None
+    ) -> Union[T, None]:
+        target_node = self.search_node(search_func=search_func, value=value)
+
+        if target_node:
+            return target_node.value
 
         return None
 
@@ -203,10 +213,13 @@ class DoublyLinkedList(Generic[T]):
         return self
 
     def __next__(self) -> Node[T]:
-        if self._iter_pointer and self._iter_pointer.next:
+        if self._iter_pointer:
             current_item = self._iter_pointer
             self._iter_pointer = self._iter_pointer.next
 
             return current_item
         else:
             raise StopIteration
+
+    def __len__(self) -> int:
+        return self._size
