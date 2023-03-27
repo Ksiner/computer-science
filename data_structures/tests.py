@@ -1,7 +1,7 @@
 from typing import Union
 from .linked_list import DoublyLinkedList, Node
 from .hash_table import ChainingHashTable
-from .trees.binary_tree import BinaryTree, BinaryTreeNode
+from .trees.binary_tree import OrderedBinaryTree, BinaryTreeNode
 
 
 class AbstractTest:
@@ -177,10 +177,10 @@ class ChainingHashTableWithTableDoublingTest(AbstractTest):
         assert hash_table._capacity == 4
 
 
-class SingleNodeBinaryTreeTest(AbstractTest):
+class SingleNodeOrderedBinaryTreeTest(AbstractTest):
     def run(self) -> None:
         # Tree Itself
-        binary_tree = BinaryTree()
+        binary_tree = OrderedBinaryTree()
 
         assert binary_tree.height == 0
         assert len(binary_tree) == 0
@@ -193,24 +193,57 @@ class SingleNodeBinaryTreeTest(AbstractTest):
         assert binary_tree.height == 0
         assert len(binary_tree) == 1
 
+        node_unknown = binary_tree.find_node_by_value(7)
+        node_unknown_successor = binary_tree.find_successor_by_value(7)
 
-class MultipleNodesBinaryTreeTest(AbstractTest):
+        assert not node_unknown
+        assert not node_unknown_successor
+
+
+class MultipleNodesOrderedBinaryTreeTest(AbstractTest):
     def run(self) -> None:
-        # Tree Root
+        # Tree Structure
         root = BinaryTreeNode(
             value=2,
             left=BinaryTreeNode(
-                value=4, left=BinaryTreeNode(value=5, left=BinaryTreeNode(value=6)), right=BinaryTreeNode(value=3)
+                value=4,
+                left=BinaryTreeNode(value=5, left=BinaryTreeNode(value=6)),
+                right=BinaryTreeNode(value=3),
             ),
             right=BinaryTreeNode(value=1),
         )
 
         # Tree Itself
-        binary_tree = BinaryTree(root=root)
+        binary_tree = OrderedBinaryTree(root=root)
+
         assert binary_tree.height == 3
         assert len(binary_tree) == 6
         assert root.left and root.left.parent == root
         assert root.right and root.right.parent == root
+
+        node_6 = binary_tree.find_node_by_value(6)
+        node_6_successor = binary_tree.find_successor_by_value(6)
+
+        assert node_6 and node_6.value == 6
+        assert node_6_successor and node_6_successor.value == 5
+
+        node_3 = binary_tree.find_node_by_value(3)
+        node_3_successor = binary_tree.find_successor_by_value(3)
+
+        assert node_3 and node_3.value == 3
+        assert node_3_successor and node_3_successor.value == 2
+
+        node_unknown = binary_tree.find_node_by_value(7)
+        node_unknown_successor = binary_tree.find_successor_by_value(7)
+
+        assert not node_unknown
+        assert not node_unknown_successor
+
+        root_node = binary_tree.find_node_by_value(2)
+        root_node_successor = binary_tree.find_successor_by_value(2)
+
+        assert root_node and root_node == root
+        assert root_node_successor and root_node_successor.value == 1
 
 
 TestCase(
@@ -233,7 +266,8 @@ TestCase(
             name="Trees",
             tests_or_sub_cases=[
                 TestCase(
-                    name="Binary Tree", tests_or_sub_cases=[SingleNodeBinaryTreeTest(), MultipleNodesBinaryTreeTest()]
+                    name="Binary Tree",
+                    tests_or_sub_cases=[SingleNodeOrderedBinaryTreeTest(), MultipleNodesOrderedBinaryTreeTest()],
                 )
             ],
         ),
