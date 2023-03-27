@@ -61,6 +61,11 @@ class OrderedBinaryTree(Generic[T], BinaryTreeBase[T]):
 
         return self.find_successor(node=target_node)
 
+    def find_predecessor_by_value(self, value: T) -> Union[BinaryTreeNode[T], None]:
+        target_node = self.find_node_by_value(value=value)
+
+        return self.find_predecessor(node=target_node)
+
     def traverse_sub_tree(self, node: Union[BinaryTreeNode[T], None]) -> list[BinaryTreeNode[T]]:
         if not node:
             return []
@@ -80,26 +85,49 @@ class OrderedBinaryTree(Generic[T], BinaryTreeBase[T]):
 
         return node
 
+    def find_last_subtree_node(self, node: Union[BinaryTreeNode[T], None] = None):
+        if not node:
+            return None
+
+        if node.right:
+            return self.find_last_subtree_node(node=node.right)
+
+        return node
+
+    def _find_first_entrance_as_left_subtree(self, node: Union[BinaryTreeNode[T], None] = None):
+        """Returns first parent that that contains provided node's subtree as it's left node"""
+        if not node:
+            return None
+
+        if not node.parent:
+            return None
+
+        if node.parent.left == node:
+            return node.parent
+
+        return self._find_first_entrance_as_left_subtree(node.parent)
+
     def find_successor(self, node: Union[BinaryTreeNode[T], None] = None) -> Union[BinaryTreeNode[T], None]:
         if not node:
             return None
 
         # Root Node case
-        if not node.parent:
-            if node.right:
-                return self.find_first_subtree_node(node.right)
-            else:
-                return None
+        if node.right:
+            return self.find_first_subtree_node(node.right)
 
-        if node.parent.left == node:
+        return self._find_first_entrance_as_left_subtree(node)
+
+    def find_predecessor(self, node: Union[BinaryTreeNode[T], None] = None) -> Union[BinaryTreeNode[T], None]:
+        if not node:
+            return None
+
+        if node.left:
+            return self.find_last_subtree_node(node.left)
+
+        if node.parent and node.parent.right == node:
             return node.parent
 
-        # if node is not the left one (relative to the parent node), then it's the right one
-
-        if node.right:
-            return node.right
-
-        return node.parent.parent
+        return None
 
     def __len__(self) -> int:
         return len(self.traverse_tree())

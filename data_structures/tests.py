@@ -208,7 +208,7 @@ class MultipleNodesOrderedBinaryTreeTest(AbstractTest):
             left=BinaryTreeNode(
                 value=4,
                 left=BinaryTreeNode(value=5, left=BinaryTreeNode(value=6)),
-                right=BinaryTreeNode(value=3),
+                right=BinaryTreeNode(value=3, right=BinaryTreeNode(value=2.5)),
             ),
             right=BinaryTreeNode(value=1),
         )
@@ -217,7 +217,7 @@ class MultipleNodesOrderedBinaryTreeTest(AbstractTest):
         binary_tree = OrderedBinaryTree(root=root)
 
         assert binary_tree.height == 3
-        assert len(binary_tree) == 6
+        assert len(binary_tree) == 7
         assert root.left and root.left.parent == root
         assert root.right and root.right.parent == root
 
@@ -227,11 +227,11 @@ class MultipleNodesOrderedBinaryTreeTest(AbstractTest):
         assert node_6 and node_6.value == 6
         assert node_6_successor and node_6_successor.value == 5
 
-        node_3 = binary_tree.find_node_by_value(3)
-        node_3_successor = binary_tree.find_successor_by_value(3)
+        node_2_5 = binary_tree.find_node_by_value(2.5)
+        node_2_5_successor = binary_tree.find_successor_by_value(2.5)
 
-        assert node_3 and node_3.value == 3
-        assert node_3_successor and node_3_successor.value == 2
+        assert node_2_5 and node_2_5.value == 2.5
+        assert node_2_5_successor and node_2_5_successor.value == 2
 
         node_unknown = binary_tree.find_node_by_value(7)
         node_unknown_successor = binary_tree.find_successor_by_value(7)
@@ -244,6 +244,73 @@ class MultipleNodesOrderedBinaryTreeTest(AbstractTest):
 
         assert root_node and root_node == root
         assert root_node_successor and root_node_successor.value == 1
+
+
+class RightOnlyNodesOrderedBinaryTreeTest(AbstractTest):
+    def run(self) -> None:
+        # Tree Structure
+        root = BinaryTreeNode(
+            value=1,
+            right=BinaryTreeNode(value=2, right=BinaryTreeNode(value=3, right=BinaryTreeNode(value=4))),
+        )
+        binary_tree = OrderedBinaryTree(root=root)
+
+        assert binary_tree.height == 3
+        assert len(binary_tree) == 4
+
+        node_3_successor = binary_tree.find_successor_by_value(3)
+
+        assert node_3_successor and node_3_successor.value == 4
+
+        node_4_successor = binary_tree.find_successor_by_value(4)
+
+        assert not node_4_successor
+
+
+class PredecessorSearchOnOrderedBinaryTreeTest(AbstractTest):
+    def run(self) -> None:
+        # Tree Structure -- Right Only
+        right_only_root = BinaryTreeNode(
+            value=1,
+            right=BinaryTreeNode(value=2, right=BinaryTreeNode(value=3, right=BinaryTreeNode(value=4))),
+        )
+        right_only_binary_tree = OrderedBinaryTree(root=right_only_root)
+
+        node_3_predecessor = right_only_binary_tree.find_predecessor_by_value(3)
+
+        assert node_3_predecessor and node_3_predecessor.value == 2
+
+        root_predecessor = right_only_binary_tree.find_predecessor_by_value(1)
+
+        assert not root_predecessor
+
+        # Tree Structure -- Left Only Tree
+        left_only_root = BinaryTreeNode(value=3, left=BinaryTreeNode(value=2, left=BinaryTreeNode(value=1)))
+        left_only_binary_tree = OrderedBinaryTree(root=left_only_root)
+
+        node_1_predecessor = left_only_binary_tree.find_predecessor_by_value(1)
+
+        assert not node_1_predecessor
+
+        root_predecessor = left_only_binary_tree.find_predecessor_by_value(3)
+
+        assert root_predecessor and root_predecessor.value == 2
+
+        # Tree Structure -- Mixed Tree
+        mixed_tree_root = BinaryTreeNode(
+            value=2,
+            left=BinaryTreeNode(
+                value=5,
+                left=BinaryTreeNode(value=6, left=BinaryTreeNode(value=7)),
+                right=BinaryTreeNode(value=4, right=BinaryTreeNode(value=3)),
+            ),
+            right=BinaryTreeNode(value=1),
+        )
+        mixed_binary_tree = OrderedBinaryTree(root=mixed_tree_root)
+
+        root_predecessor = mixed_binary_tree.find_predecessor_by_value(2)
+
+        assert root_predecessor and root_predecessor.value == 3
 
 
 TestCase(
@@ -267,7 +334,17 @@ TestCase(
             tests_or_sub_cases=[
                 TestCase(
                     name="Binary Tree",
-                    tests_or_sub_cases=[SingleNodeOrderedBinaryTreeTest(), MultipleNodesOrderedBinaryTreeTest()],
+                    tests_or_sub_cases=[
+                        TestCase(
+                            name="Ordered Binary Tree",
+                            tests_or_sub_cases=[
+                                SingleNodeOrderedBinaryTreeTest(),
+                                MultipleNodesOrderedBinaryTreeTest(),
+                                RightOnlyNodesOrderedBinaryTreeTest(),
+                                PredecessorSearchOnOrderedBinaryTreeTest(),
+                            ],
+                        )
+                    ],
                 )
             ],
         ),
