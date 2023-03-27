@@ -1,6 +1,7 @@
 from typing import Union
 from .linked_list import DoublyLinkedList, Node
 from .hash_table import ChainingHashTable
+from .trees.binary_tree import BinaryTree, BinaryTreeNode
 
 
 class AbstractTest:
@@ -176,6 +177,42 @@ class ChainingHashTableWithTableDoublingTest(AbstractTest):
         assert hash_table._capacity == 4
 
 
+class SingleNodeBinaryTreeTest(AbstractTest):
+    def run(self) -> None:
+        # Tree Itself
+        binary_tree = BinaryTree()
+
+        assert binary_tree.height == 0
+        assert len(binary_tree) == 0
+
+        # Tree Root
+        root = BinaryTreeNode(value=1)
+
+        binary_tree.root = root
+
+        assert binary_tree.height == 0
+        assert len(binary_tree) == 1
+
+
+class MultipleNodesBinaryTreeTest(AbstractTest):
+    def run(self) -> None:
+        # Tree Root
+        root = BinaryTreeNode(
+            value=2,
+            left=BinaryTreeNode(
+                value=4, left=BinaryTreeNode(value=5, left=BinaryTreeNode(value=6)), right=BinaryTreeNode(value=3)
+            ),
+            right=BinaryTreeNode(value=1),
+        )
+
+        # Tree Itself
+        binary_tree = BinaryTree(root=root)
+        assert binary_tree.height == 3
+        assert len(binary_tree) == 6
+        assert root.left and root.left.parent == root
+        assert root.right and root.right.parent == root
+
+
 TestCase(
     "Tests",
     tests_or_sub_cases=[
@@ -189,6 +226,14 @@ TestCase(
                         ChainingHashTableWithoutTableDoublingTest(),
                         ChainingHashTableWithTableDoublingTest(),
                     ],
+                )
+            ],
+        ),
+        TestCase(
+            name="Trees",
+            tests_or_sub_cases=[
+                TestCase(
+                    name="Binary Tree", tests_or_sub_cases=[SingleNodeBinaryTreeTest(), MultipleNodesBinaryTreeTest()]
                 )
             ],
         ),
