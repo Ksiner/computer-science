@@ -360,6 +360,11 @@ class InsertAfterOnOrderedBinaryTreeTest(UnitTestCase):
         )
         right_only_binary_tree = OrderedBinaryTree(root=right_only_root)
 
+        right_only_binary_tree.insert_after_by_value(value=7, after_value=8)
+
+        self.assertEqual(len(right_only_binary_tree), 4)
+        self.assertEqual(right_only_binary_tree.height, 3)
+
         right_only_binary_tree.insert_after_by_value(value=5, after_value=4)
 
         self.assertEqual(len(right_only_binary_tree), 5)
@@ -385,9 +390,14 @@ class InsertAfterOnOrderedBinaryTreeTest(UnitTestCase):
         self.assertEqual(node_5.left.value if node_5 and node_5.left else None, 4.5)
 
     def test_left_only_list(self) -> None:
-        # Tree Structure -- Right Only
+        # Tree Structure -- Left Only
         left_only_root = BinaryTreeNode[float](value=3, left=BinaryTreeNode(value=2, left=BinaryTreeNode(value=1)))
         left_only_binary_tree = OrderedBinaryTree(root=left_only_root)
+
+        left_only_binary_tree.insert_after_by_value(value=7, after_value=8)
+
+        self.assertEqual(len(left_only_binary_tree), 3)
+        self.assertEqual(left_only_binary_tree.height, 2)
 
         left_only_binary_tree.insert_after_by_value(value=1.5, after_value=1)
 
@@ -412,3 +422,69 @@ class InsertAfterOnOrderedBinaryTreeTest(UnitTestCase):
         self.assertIsNotNone(node_3)
         self.assertIsNotNone(node_3.right if node_3 else node_3)
         self.assertEqual(node_3.right.value if node_3 and node_3.right else node_3, 4)
+
+
+class DeleteNodeOnOrderedBinaryTreeTest(UnitTestCase):
+    def test_right_only_list(self) -> None:
+        # Tree Structure -- Right Only
+        right_only_root = BinaryTreeNode[float](
+            value=1,
+            right=BinaryTreeNode(value=2, right=BinaryTreeNode(value=3, right=BinaryTreeNode(value=4))),
+        )
+        right_only_binary_tree = OrderedBinaryTree(root=right_only_root)
+
+        # Deleting non-existing node
+        right_only_binary_tree.delete_node_by_value(value=5)
+
+        self.assertEqual(len(right_only_binary_tree), 4)
+        self.assertEqual(right_only_binary_tree.height, 3)
+
+        # Deleting root node (which is also the first node in case of InOrder traversal)
+        right_only_binary_tree.delete_node_by_value(1)
+
+        self.assertEqual(len(right_only_binary_tree), 3)
+        self.assertEqual(right_only_binary_tree.height, 2)
+        self.assertEqual(right_only_binary_tree.root.value if right_only_binary_tree.root else None, 2)
+        self.assertListEqual([node.value for node in right_only_binary_tree.traverse_tree()], [2, 3, 4])
+
+        # Deleting the last/leaf node
+        right_only_binary_tree.delete_node_by_value(4)
+
+        self.assertEqual(len(right_only_binary_tree), 2)
+        self.assertEqual(right_only_binary_tree.height, 1)
+        self.assertEqual(right_only_binary_tree.root.value if right_only_binary_tree.root else None, 2)
+        self.assertListEqual([node.value for node in right_only_binary_tree.traverse_tree()], [2, 3])
+
+        # Deleting all the nodes of the tree
+        right_only_binary_tree.delete_node_by_value(2).delete_node_by_value(3)
+
+        self.assertEqual(len(right_only_binary_tree), 0)
+        self.assertEqual(right_only_binary_tree.height, 0)
+        self.assertIsNone(right_only_binary_tree.root)
+        self.assertListEqual([node.value for node in right_only_binary_tree.traverse_tree()], [])
+
+    def test_left_only_list(self) -> None:
+        # Tree Structure -- Left Only
+        left_only_root = BinaryTreeNode[float](value=3, left=BinaryTreeNode(value=2, left=BinaryTreeNode(value=1)))
+        left_only_binary_tree = OrderedBinaryTree(root=left_only_root)
+
+        # Deleting the root node (which is also the last node in case of In-Order traversal)
+        left_only_binary_tree.delete_node_by_value(value=3)
+
+        self.assertEqual(len(left_only_binary_tree), 2)
+        self.assertEqual(left_only_binary_tree.height, 1)
+        self.assertEqual(left_only_binary_tree.root.value if left_only_binary_tree.root else None, 2)
+        self.assertListEqual([node.value for node in left_only_binary_tree.traverse_tree()], [1, 2])
+
+    def test_mixed_tree(self) -> None:
+        mixed_root = BinaryTreeNode(
+            value=4, left=BinaryTreeNode(value=2, left=BinaryTreeNode(value=1), right=BinaryTreeNode(value=3))
+        )
+        mixed_binary_tree = OrderedBinaryTree(root=mixed_root)
+
+        mixed_binary_tree.delete_node_by_value(4)
+
+        self.assertEqual(len(mixed_binary_tree), 3)
+        self.assertEqual(mixed_binary_tree.height, 2)
+        self.assertEqual(mixed_binary_tree.root.value if mixed_binary_tree.root else None, 3)
+        self.assertListEqual([node.value for node in mixed_binary_tree.traverse_tree()], [1, 2, 3])

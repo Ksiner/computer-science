@@ -25,6 +25,12 @@ class BinaryTreeNode(Generic[T]):
     def value(self) -> T:
         return self._value
 
+    @value.setter
+    def value(self, value: T) -> T:
+        self._value = value
+
+        return self._value
+
     @property
     def left(self):
         return self._left
@@ -60,6 +66,18 @@ class BinaryTreeNode(Generic[T]):
         self._parent = parent
 
         return self._parent
+
+    def delete_child(self, node: Union["BinaryTreeNode[T]", None]) -> "BinaryTreeNode[T]":
+        if not node:
+            return self
+
+        if self.left == node:
+            self.left = None
+
+        if self.right == node:
+            self.right = None
+
+        return self
 
     def __repr__(self) -> str:
         return str(self.value)

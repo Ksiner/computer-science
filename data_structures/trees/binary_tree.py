@@ -149,5 +149,41 @@ class OrderedBinaryTree(Generic[T], BinaryTreeBase[T]):
 
         return self
 
+    def delete_node_by_value(self, value: T) -> "OrderedBinaryTree[T]":
+        target_node = self.find_node_by_value(value=value)
+
+        return self.delete_node(target_node)
+
+    def delete_node(self, node: Union[BinaryTreeNode[T], None]) -> "OrderedBinaryTree[T]":
+        if not node:
+            return self
+
+        # Node is a leaf node
+        if not node.left and not node.right:
+            # Root node
+            if not node.parent:
+                self._root = None
+            else:
+                node.parent.delete_child(node)
+        else:
+            predecessor_node = self.find_predecessor(node)
+
+            if predecessor_node:
+                tmp_val = node.value
+                node.value = predecessor_node.value
+                predecessor_node.value = tmp_val
+                return self.delete_node(predecessor_node)
+            else:
+                # No predecessor node means that
+                # current node is the most left node
+                # it's not a leaf
+                # That means that the current left-most node is the root of the tree
+                # Thus we're switching the root to the next right child
+                if node.right:
+                    self._root = node.right
+                    node.right.parent = None
+
+        return self
+
     def __len__(self) -> int:
         return len(self.traverse_tree())
