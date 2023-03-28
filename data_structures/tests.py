@@ -429,15 +429,25 @@ class DeleteNodeOnOrderedBinaryTreeTest(UnitTestCase):
         # Tree Structure -- Right Only
         right_only_root = BinaryTreeNode[float](
             value=1,
-            right=BinaryTreeNode(value=2, right=BinaryTreeNode(value=3, right=BinaryTreeNode(value=4))),
+            right=BinaryTreeNode(
+                value=2, right=BinaryTreeNode(value=6, right=BinaryTreeNode(value=3, right=BinaryTreeNode(value=4)))
+            ),
         )
         right_only_binary_tree = OrderedBinaryTree(root=right_only_root)
 
         # Deleting non-existing node
         right_only_binary_tree.delete_node_by_value(value=5)
 
+        self.assertEqual(len(right_only_binary_tree), 5)
+        self.assertEqual(right_only_binary_tree.height, 4)
+
+        # Deleting node in the middle
+        right_only_binary_tree.delete_node_by_value(6)
+
         self.assertEqual(len(right_only_binary_tree), 4)
         self.assertEqual(right_only_binary_tree.height, 3)
+        self.assertEqual(right_only_binary_tree.root.value if right_only_binary_tree.root else None, 1)
+        self.assertListEqual([node.value for node in right_only_binary_tree.traverse_tree()], [1, 2, 3, 4])
 
         # Deleting root node (which is also the first node in case of InOrder traversal)
         right_only_binary_tree.delete_node_by_value(1)

@@ -166,22 +166,18 @@ class OrderedBinaryTree(Generic[T], BinaryTreeBase[T]):
             else:
                 node.parent.delete_child(node)
         else:
-            predecessor_node = self.find_predecessor(node)
+            next_node: BinaryTreeNode[T] | None = None
 
-            if predecessor_node:
+            if node.left:
+                next_node = self.find_predecessor(node)
+            elif node.right:
+                next_node = self.find_successor(node)
+
+            if next_node:
                 tmp_val = node.value
-                node.value = predecessor_node.value
-                predecessor_node.value = tmp_val
-                return self.delete_node(predecessor_node)
-            else:
-                # No predecessor node means that
-                # current node is the most left node
-                # it's not a leaf
-                # That means that the current left-most node is the root of the tree
-                # Thus we're switching the root to the next right child
-                if node.right:
-                    self._root = node.right
-                    node.right.parent = None
+                node.value = next_node.value
+                next_node.value = tmp_val
+                return self.delete_node(next_node)
 
         return self
 
