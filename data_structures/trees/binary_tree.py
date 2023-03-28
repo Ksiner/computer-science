@@ -129,5 +129,25 @@ class OrderedBinaryTree(Generic[T], BinaryTreeBase[T]):
 
         return None
 
+    def insert_after_by_value(self, value: T, after_value: T) -> "OrderedBinaryTree[T]":
+        node_after = self.find_node_by_value(value=after_value)
+
+        return self.insert_after(value=value, after_node=node_after)
+
+    def insert_after(self, value: T, after_node: Union[BinaryTreeNode[T], None]) -> "OrderedBinaryTree[T]":
+        if not after_node:
+            return self
+
+        new_node = BinaryTreeNode(value=value)
+
+        if not after_node.right:
+            after_node.right = new_node
+        else:
+            target_node = self.find_first_subtree_node(after_node.right)
+            if target_node:
+                target_node.left = new_node
+
+        return self
+
     def __len__(self) -> int:
         return len(self.traverse_tree())

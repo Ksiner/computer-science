@@ -2,17 +2,16 @@ from typing import Union
 from .linked_list import DoublyLinkedList, Node
 from .hash_table import ChainingHashTable
 from .trees.binary_tree import OrderedBinaryTree, BinaryTreeNode
+from unittest import TestCase as UnitTestCase
 
 
-class AbstractTest:
+class TestBase:
     def run(self) -> None:
         raise NotImplementedError()
 
 
 class TestCase:
-    def __init__(
-        self, name: str, tests_or_sub_cases: Union[list[Union[AbstractTest, "TestCase"]], None] = None
-    ) -> None:
+    def __init__(self, name: str, tests_or_sub_cases: Union[list[Union[TestBase, "TestCase"]], None] = None) -> None:
         self._name = name
         self._tests_or_sub_cases = tests_or_sub_cases or []
 
@@ -20,7 +19,7 @@ class TestCase:
         print(("\t" * depth) + self._name)
 
         for test_or_case in self._tests_or_sub_cases:
-            if isinstance(test_or_case, AbstractTest):
+            if isinstance(test_or_case, TestBase):
                 print(("\t" * (depth + 1)) + test_or_case.__class__.__name__)
 
                 test_or_case.run()
@@ -32,7 +31,7 @@ class TestCase:
         print(("\t" * (depth)) + "passed ✅")
 
 
-class LinkedListTest1(AbstractTest):
+class LinkedListTest1(TestBase):
     def run(self) -> None:
         node1 = Node(1)
         node2 = Node(2)
@@ -67,7 +66,7 @@ class LinkedListTest1(AbstractTest):
         assert test_list_1.search(value=2) == None
 
 
-class LinkedListTest2(AbstractTest):
+class LinkedListTest2(TestBase):
     def run(self) -> None:
         test_list_2 = DoublyLinkedList()
         assert test_list_2.to_array_of_nodes() == []
@@ -110,7 +109,7 @@ class LinkedListTest2(AbstractTest):
         assert test_list_2.to_array() == []
 
 
-class ChainingHashTableWithoutTableDoublingTest(AbstractTest):
+class ChainingHashTableWithoutTableDoublingTest(TestBase):
     def run(self) -> None:
         hash_table = ChainingHashTable[int, int]()
         hash_table.add(key=1, value=1)
@@ -140,7 +139,7 @@ class ChainingHashTableWithoutTableDoublingTest(AbstractTest):
         assert len(hash_table) == 4
 
 
-class ChainingHashTableWithTableDoublingTest(AbstractTest):
+class ChainingHashTableWithTableDoublingTest(TestBase):
     def run(self) -> None:
         hash_table = ChainingHashTable[str, int](auto_size=True)
         [key1, key2, key3, key4, key5] = ["PNGHPqYORV", "ogICwMlVqX", "UMiMidgRYu", "3xUbcEz6Lv", "lwDqElbH2g"]
@@ -177,7 +176,7 @@ class ChainingHashTableWithTableDoublingTest(AbstractTest):
         assert hash_table._capacity == 4
 
 
-class SingleNodeOrderedBinaryTreeTest(AbstractTest):
+class SingleNodeOrderedBinaryTreeTest(TestBase):
     def run(self) -> None:
         # Tree Itself
         binary_tree = OrderedBinaryTree()
@@ -200,7 +199,7 @@ class SingleNodeOrderedBinaryTreeTest(AbstractTest):
         assert not node_unknown_successor
 
 
-class MultipleNodesOrderedBinaryTreeTest(AbstractTest):
+class MultipleNodesOrderedBinaryTreeTest(TestBase):
     def run(self) -> None:
         # Tree Structure
         root = BinaryTreeNode(
@@ -246,7 +245,7 @@ class MultipleNodesOrderedBinaryTreeTest(AbstractTest):
         assert root_node_successor and root_node_successor.value == 1
 
 
-class RightOnlyNodesOrderedBinaryTreeTest(AbstractTest):
+class RightOnlyNodesOrderedBinaryTreeTest(TestBase):
     def run(self) -> None:
         # Tree Structure
         root = BinaryTreeNode(
@@ -267,7 +266,7 @@ class RightOnlyNodesOrderedBinaryTreeTest(AbstractTest):
         assert not node_4_successor
 
 
-class PredecessorSearchOnOrderedBinaryTreeTest(AbstractTest):
+class PredecessorSearchOnOrderedBinaryTreeTest(TestBase):
     def run(self) -> None:
         # Tree Structure -- Right Only
         right_only_root = BinaryTreeNode(
@@ -350,3 +349,66 @@ TestCase(
         ),
     ],
 ).run()
+
+
+class InsertAfterOnOrderedBinaryTreeTest(UnitTestCase):
+    def test_right_only_list(self) -> None:
+        # Tree Structure -- Right Only
+        right_only_root = BinaryTreeNode[float](
+            value=1,
+            right=BinaryTreeNode(value=2, right=BinaryTreeNode(value=3, right=BinaryTreeNode(value=4))),
+        )
+        right_only_binary_tree = OrderedBinaryTree(root=right_only_root)
+
+        right_only_binary_tree.insert_after_by_value(value=5, after_value=4)
+
+        self.assertEqual(len(right_only_binary_tree), 5)
+        self.assertEqual(right_only_binary_tree.height, 4)
+        self.assertListEqual([node.value for node in right_only_binary_tree.traverse_tree()], [1, 2, 3, 4, 5])
+
+        node_4 = right_only_binary_tree.find_node_by_value(4)
+
+        self.assertIsNotNone(node_4)
+        self.assertIsNotNone(node_4.right if node_4 else node_4)
+        self.assertIsNotNone(node_4.right.value if node_4 and node_4.right else node_4, 5)
+
+        right_only_binary_tree.insert_after_by_value(value=4.5, after_value=4)
+
+        self.assertEqual(len(right_only_binary_tree), 6)
+        self.assertEqual(right_only_binary_tree.height, 5)
+        self.assertListEqual([node.value for node in right_only_binary_tree.traverse_tree()], [1, 2, 3, 4, 4.5, 5])
+
+        node_5 = right_only_binary_tree.find_node_by_value(5)
+
+        self.assertIsNotNone(node_5)
+        self.assertIsNotNone(node_5.left if node_5 else None)
+        self.assertEqual(node_5.left.value if node_5 and node_5.left else None, 4.5)
+
+    def test_left_only_list(self) -> None:
+        # Tree Structure -- Right Only
+        left_only_root = BinaryTreeNode[float](value=3, left=BinaryTreeNode(value=2, left=BinaryTreeNode(value=1)))
+        left_only_binary_tree = OrderedBinaryTree(root=left_only_root)
+
+        left_only_binary_tree.insert_after_by_value(value=1.5, after_value=1)
+
+        self.assertEqual(len(left_only_binary_tree), 4)
+        self.assertEqual(left_only_binary_tree.height, 3)
+        self.assertListEqual([node.value for node in left_only_binary_tree.traverse_tree()], [1, 1.5, 2, 3])
+
+        node_1 = left_only_binary_tree.find_node_by_value(1)
+
+        self.assertIsNotNone(node_1)
+        self.assertIsNotNone(node_1.right if node_1 else node_1)
+        self.assertEqual(node_1.right.value if node_1 and node_1.right else node_1, 1.5)
+
+        left_only_binary_tree.insert_after_by_value(value=4, after_value=3)
+
+        self.assertEqual(len(left_only_binary_tree), 5)
+        self.assertEqual(left_only_binary_tree.height, 3)
+        self.assertListEqual([node.value for node in left_only_binary_tree.traverse_tree()], [1, 1.5, 2, 3, 4])
+
+        node_3 = left_only_binary_tree.find_node_by_value(3)
+
+        self.assertIsNotNone(node_3)
+        self.assertIsNotNone(node_3.right if node_3 else node_3)
+        self.assertEqual(node_3.right.value if node_3 and node_3.right else node_3, 4)
