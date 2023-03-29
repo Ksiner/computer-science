@@ -68,6 +68,7 @@ class BinaryTreeBase(Generic[T]):
 class OrderedBinaryTree(Generic[T], BinaryTreeBase[T]):
     def __init__(self, root: Union[BinaryTreeNode[T], None] = None) -> None:
         super().__init__(root)
+        self._root = root
 
     def traverse_tree(self):
         return self.traverse_sub_tree(self._root)
@@ -91,6 +92,25 @@ class OrderedBinaryTree(Generic[T], BinaryTreeBase[T]):
             + [node]
             + (self.traverse_sub_tree(node.right) if node.right else [])
         )
+
+    def find_by_index(self, index: int) -> Union[BinaryTreeNode[T], None]:
+        if not self._root or self._root.subtree_size <= index or index < 0:
+            return None
+
+        return self._search_by_index_in_subtree(node=self._root, index=index)
+
+    def _search_by_index_in_subtree(self, node: BinaryTreeNode[T], index: int) -> Union[BinaryTreeNode[T], None]:
+        left_subtree_size = node.left.subtree_size if node.left else 0
+
+        if index == left_subtree_size:
+            return node
+        elif index < left_subtree_size and node.left:
+            # searching in the left subtree
+            return self._search_by_index_in_subtree(node=node.left, index=index)
+        elif index > left_subtree_size and node.right:
+            return self._search_by_index_in_subtree(node=node.right, index=(index - left_subtree_size - 1))
+
+        return None
 
     def find_first_subtree_node(self, node: Union[BinaryTreeNode[T], None] = None):
         if not node:

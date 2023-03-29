@@ -3,6 +3,7 @@ from .linked_list import DoublyLinkedList, Node
 from .hash_table import ChainingHashTable
 from .trees.binary_tree import OrderedBinaryTree, BinaryTreeNode
 from unittest import TestCase as UnitTestCase
+from math import floor
 
 
 class TestBase:
@@ -498,3 +499,91 @@ class DeleteNodeOnOrderedBinaryTreeTest(UnitTestCase):
         self.assertEqual(mixed_binary_tree.height, 2)
         self.assertEqual(mixed_binary_tree.root.value if mixed_binary_tree.root else None, 3)
         self.assertListEqual([node.value for node in mixed_binary_tree.traverse_tree()], [1, 2, 3])
+
+
+class SearchByIndexOnOrderedBinaryTreeTest(UnitTestCase):
+    def test_right_only_list(self) -> None:
+        # Tree Structure -- Right Only
+        right_only_root = BinaryTreeNode[float](
+            value=1,
+            right=BinaryTreeNode(
+                value=2, right=BinaryTreeNode(value=6, right=BinaryTreeNode(value=3, right=BinaryTreeNode(value=4)))
+            ),
+        )
+        right_only_binary_tree = OrderedBinaryTree(root=right_only_root)
+
+        # Searching non-existing node
+        non_existing_node = right_only_binary_tree.find_by_index(index=-1)
+
+        self.assertIsNone(non_existing_node)
+
+        first_node = right_only_binary_tree.find_by_index(index=0)
+
+        self.assertEqual(first_node, right_only_root)
+
+        last_node = right_only_binary_tree.find_by_index(index=len(right_only_binary_tree) - 1)
+
+        self.assertIsNotNone(last_node)
+        self.assertEqual(last_node.value if last_node else None, 4)
+
+        middle_node = right_only_binary_tree.find_by_index(index=floor((len(right_only_binary_tree) - 1) / 2))
+
+        self.assertIsNotNone(middle_node)
+        self.assertEqual(middle_node.value if middle_node else None, 6)
+
+    def test_left_only_list(self) -> None:
+        # Tree Structure -- Left Only
+        left_only_root = BinaryTreeNode[float](value=3, left=BinaryTreeNode(value=2, left=BinaryTreeNode(value=1)))
+        left_only_binary_tree = OrderedBinaryTree(root=left_only_root)
+
+        # Searching non-existing node
+        non_existing_node = left_only_binary_tree.find_by_index(index=-1)
+
+        self.assertIsNone(non_existing_node)
+
+        first_node = left_only_binary_tree.find_by_index(index=0)
+
+        self.assertIsNotNone(first_node)
+        self.assertEqual(first_node.value if first_node else None, 1)
+
+        last_node = left_only_binary_tree.find_by_index(index=len(left_only_binary_tree) - 1)
+
+        self.assertIsNotNone(last_node)
+        self.assertEqual(last_node.value if last_node else None, 3)
+
+        middle_node = left_only_binary_tree.find_by_index(index=floor((len(left_only_binary_tree) - 1) / 2))
+
+        self.assertIsNotNone(middle_node)
+        self.assertEqual(middle_node.value if middle_node else None, 2)
+
+    def test_mixed_tree(self) -> None:
+        mixed_root = BinaryTreeNode(
+            value=4, left=BinaryTreeNode(value=2, left=BinaryTreeNode(value=1), right=BinaryTreeNode(value=3))
+        )
+        mixed_binary_tree = OrderedBinaryTree(root=mixed_root)
+
+        # Searching non-existing node
+        non_existing_node = mixed_binary_tree.find_by_index(index=-1)
+
+        self.assertIsNone(non_existing_node)
+
+        first_node = mixed_binary_tree.find_by_index(index=0)
+
+        self.assertIsNotNone(first_node)
+        self.assertEqual(first_node.value if first_node else None, 1)
+
+        last_node = mixed_binary_tree.find_by_index(index=len(mixed_binary_tree) - 1)
+
+        self.assertIsNotNone(last_node)
+        self.assertEqual(last_node.value if last_node else None, 4)
+
+        middle_index = floor((len(mixed_binary_tree) - 1) / 2)
+        middle_node = mixed_binary_tree.find_by_index(index=middle_index)
+
+        self.assertIsNotNone(middle_node)
+        self.assertEqual(middle_node.value if middle_node else None, 2)
+
+        next_to_middle_node = mixed_binary_tree.find_by_index(index=middle_index + 1)
+
+        self.assertIsNotNone(next_to_middle_node)
+        self.assertEqual(next_to_middle_node.value if next_to_middle_node else None, 3)
