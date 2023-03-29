@@ -1,4 +1,5 @@
 from typing import TypeVar, Generic, Union, Any
+import json
 
 T = TypeVar("T")
 
@@ -139,4 +140,4 @@ class BinaryTreeNode(Generic[T]):
             self._recalculate_subtree_size(node.parent)
 
     def __repr__(self) -> str:
-        return str({"value": self.value, "height": self.height, "size": self.subtree_size})
+        return json.dumps({"value": self.value, "height": self.height, "size": self.subtree_size})

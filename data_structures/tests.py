@@ -587,3 +587,5 @@ class SearchByIndexOnOrderedBinaryTreeTest(UnitTestCase):
 
         self.assertIsNotNone(next_to_middle_node)
         self.assertEqual(next_to_middle_node.value if next_to_middle_node else None, 3)
+
+        mixed_binary_tree.export_to_image()

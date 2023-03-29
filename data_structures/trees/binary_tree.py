@@ -1,5 +1,7 @@
 from typing import TypeVar, Generic, Union
 from .types import BinaryTreeNode
+from collections import deque
+from graphviz import Graph
 
 T = TypeVar("T")
 
@@ -219,3 +221,30 @@ class OrderedBinaryTree(Generic[T], BinaryTreeBase[T]):
 
     def __len__(self) -> int:
         return self._root.subtree_size if self._root else 0
+
+    def export_to_image(self):
+        if not self._root:
+            return
+
+        queue = deque[BinaryTreeNode[T]]()
+        queue.appendleft(self._root)
+        graph = Graph(graph_attr=[("nodesep", "0.4"), ("ranksep", "0.5")])
+
+        while len(queue) > 0:
+            node = queue.popleft()
+
+            if node.left:
+                queue.append(node.left)
+
+            if node.right:
+                queue.append(node.right)
+
+            graph.node(
+                name=str(node.value),
+                label=f"value={node.value}\nheight={node.height}\nsubtree_size={node.subtree_size}",
+            )
+
+            if node.parent:
+                graph.edge(tail_name=str(node.parent.value), head_name=str(node.value))
+
+        graph.render(format="png", view=True, overwrite_source=True)
