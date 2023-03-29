@@ -10,8 +10,6 @@ class BinaryTreeBase(Generic[T]):
 
     @property
     def root(self):
-        self._len = None
-        self._height = None
         return self._root
 
     @root.setter
@@ -22,7 +20,7 @@ class BinaryTreeBase(Generic[T]):
 
     @property
     def height(self) -> int:
-        return self._find_height(self.root)
+        return self._root.height if self._root else 0
 
     def find_node_by_value(self, value: T) -> Union[BinaryTreeNode[T], None]:
         return self.deep_first_search(value=value, node=self.root)
@@ -51,8 +49,26 @@ class BinaryTreeBase(Generic[T]):
             self._find_height(node.right, init_height=next_height),
         )
 
+    def _recalculate_node_height(self, node: "BinaryTreeNode[T]"):
+        if not (node.right or node.left):
+            node._height = 0
+            return
+
+        new_height = max(node.left._height if node.left else 0, node.right._height if node.right else 0) + 1
+
+        if new_height == node.height:
+            return
+
+        node._height = new_height
+
+        if node.parent:
+            self._recalculate_node_height(node.parent)
+
 
 class OrderedBinaryTree(Generic[T], BinaryTreeBase[T]):
+    def __init__(self, root: Union[BinaryTreeNode[T], None] = None) -> None:
+        super().__init__(root)
+
     def traverse_tree(self):
         return self.traverse_sub_tree(self._root)
 
@@ -129,14 +145,14 @@ class OrderedBinaryTree(Generic[T], BinaryTreeBase[T]):
 
         return None
 
-    def insert_after_by_value(self, value: T, after_value: T) -> "OrderedBinaryTree[T]":
+    def insert_after_by_value(self, value: T, after_value: T) -> Union[BinaryTreeNode[T], None]:
         node_after = self.find_node_by_value(value=after_value)
 
         return self.insert_after(value=value, after_node=node_after)
 
-    def insert_after(self, value: T, after_node: Union[BinaryTreeNode[T], None]) -> "OrderedBinaryTree[T]":
+    def insert_after(self, value: T, after_node: Union[BinaryTreeNode[T], None]) -> Union[BinaryTreeNode[T], None]:
         if not after_node:
-            return self
+            return None
 
         new_node = BinaryTreeNode(value=value)
 
@@ -147,7 +163,7 @@ class OrderedBinaryTree(Generic[T], BinaryTreeBase[T]):
             if target_node:
                 target_node.left = new_node
 
-        return self
+        return new_node
 
     def delete_node_by_value(self, value: T) -> "OrderedBinaryTree[T]":
         target_node = self.find_node_by_value(value=value)
@@ -182,4 +198,4 @@ class OrderedBinaryTree(Generic[T], BinaryTreeBase[T]):
         return self
 
     def __len__(self) -> int:
-        return len(self.traverse_tree())
+        return self._root.subtree_size if self._root else 0
