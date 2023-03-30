@@ -219,10 +219,7 @@ class OrderedBinaryTree(Generic[T], BinaryTreeBase[T]):
 
         return self
 
-    def __len__(self) -> int:
-        return self._root.subtree_size if self._root else 0
-
-    def export_to_image(self):
+    def export_to_image(self, filename: Union[str, None] = None):
         if not self._root:
             return
 
@@ -232,6 +229,9 @@ class OrderedBinaryTree(Generic[T], BinaryTreeBase[T]):
 
         while len(queue) > 0:
             node = queue.popleft()
+            print(
+                "in loop", node.value, node.left.value if node.left else None, node.right.value if node.right else None
+            )
 
             if node.left:
                 queue.append(node.left)
@@ -247,4 +247,59 @@ class OrderedBinaryTree(Generic[T], BinaryTreeBase[T]):
             if node.parent:
                 graph.edge(tail_name=str(node.parent.value), head_name=str(node.value))
 
-        graph.render(format="png", view=True, overwrite_source=True)
+        graph.render(
+            filename=filename, format="png", directory="__generated__", view=True, overwrite_source=True, cleanup=True
+        )
+
+    def __len__(self) -> int:
+        return self._root.subtree_size if self._root else 0
+
+
+class RotatableOrderedBinaryTree(OrderedBinaryTree[T]):
+    def __init__(self, root: Union[BinaryTreeNode[T], None] = None) -> None:
+        super().__init__(root)
+        self._root = root
+
+    def rotate_right(self, node: BinaryTreeNode[T]) -> "RotatableOrderedBinaryTree[T]":
+        if node.left:
+            pivot = node.left
+
+            if node.parent:
+                if node.parent.left == node:
+                    node.parent.left = pivot
+                elif node.parent.right == node:
+                    node.parent.right = pivot
+            else:
+                pivot.parent = None
+                self._root = pivot
+
+            if pivot.right:
+                node.left = pivot.right
+            else:
+                node.left = None
+
+            pivot.right = node
+
+        return self
+
+    def rotate_left(self, node: BinaryTreeNode[T]) -> "RotatableOrderedBinaryTree[T]":
+        if node.right:
+            pivot = node.right
+
+            if node.parent:
+                if node.parent.left == node:
+                    node.parent.left = pivot
+                elif node.parent.right == node:
+                    node.parent.right = pivot
+            else:
+                pivot.parent = None
+                self._root = pivot
+
+            if pivot.left:
+                node.right = pivot.left
+            else:
+                node.right = None
+
+            pivot.left = node
+
+        return self

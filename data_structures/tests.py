@@ -1,7 +1,7 @@
 from typing import Union
 from .linked_list import DoublyLinkedList, Node
 from .hash_table import ChainingHashTable
-from .trees.binary_tree import OrderedBinaryTree, BinaryTreeNode
+from .trees.binary_tree import OrderedBinaryTree, BinaryTreeNode, RotatableOrderedBinaryTree
 from unittest import TestCase as UnitTestCase
 from math import floor
 
@@ -588,4 +588,172 @@ class SearchByIndexOnOrderedBinaryTreeTest(UnitTestCase):
         self.assertIsNotNone(next_to_middle_node)
         self.assertEqual(next_to_middle_node.value if next_to_middle_node else None, 3)
 
-        mixed_binary_tree.export_to_image()
+
+class RotateOnRotatableOrderedBinaryTreeTest(UnitTestCase):
+    def test_rotate_right(self) -> None:
+        # Tree Structure -- Right Only
+        root = BinaryTreeNode(
+            value=4,
+            left=BinaryTreeNode(value=2, left=BinaryTreeNode(value=1), right=BinaryTreeNode(value=3)),
+            right=BinaryTreeNode(value=5),
+        )
+
+        rotatable_tree = RotatableOrderedBinaryTree(root=root)
+
+        self.assertEqual(len(rotatable_tree), 5)
+        self.assertEqual(rotatable_tree.height, 2)
+        self.assertListEqual([node.value for node in rotatable_tree.traverse_tree()], [1, 2, 3, 4, 5])
+
+        rotatable_tree.rotate_right(root)
+
+        self.assertEqual(len(rotatable_tree), 5)
+        self.assertEqual(rotatable_tree.height, 2)
+        self.assertListEqual([node.value for node in rotatable_tree.traverse_tree()], [1, 2, 3, 4, 5])
+        self.assertEqual(rotatable_tree.root.value if rotatable_tree.root else None, 2)
+
+        if not rotatable_tree.root:
+            raise self.failureException("No root at rotated tree")
+
+        if not rotatable_tree.root.left:
+            raise self.failureException("No left node after the root")
+
+        if not rotatable_tree.root.right:
+            raise self.failureException("No right node after the root")
+
+        left_node = rotatable_tree.root.left
+
+        self.assertEqual(left_node.value, 1)
+        self.assertEqual(left_node.height, 0)
+        self.assertEqual(left_node.subtree_size, 1)
+
+        right_node = rotatable_tree.root.right
+
+        self.assertEqual(right_node, root)
+        self.assertEqual(right_node.value, 4)
+        self.assertEqual(right_node.height, 1)
+        self.assertEqual(right_node.subtree_size, 3)
+
+        left_leaf_node = right_node.left
+        right_leaf_node = right_node.right
+
+        if not left_leaf_node:
+            raise self.failureException("No left left node after the root")
+
+        if not right_leaf_node:
+            raise self.failureException("No right left node after the root")
+
+        self.assertEqual(left_leaf_node.value, 3)
+        self.assertEqual(left_leaf_node.height, 0)
+        self.assertEqual(left_leaf_node.subtree_size, 1)
+
+        self.assertEqual(right_leaf_node.value, 5)
+        self.assertEqual(right_leaf_node.height, 0)
+        self.assertEqual(right_leaf_node.subtree_size, 1)
+
+    def test_unavailable_rotate_right(self):
+        root = BinaryTreeNode(
+            value=4,
+            left=BinaryTreeNode(value=2, left=BinaryTreeNode(value=1), right=BinaryTreeNode(value=3)),
+            right=BinaryTreeNode(value=5),
+        )
+
+        rotatable_tree = RotatableOrderedBinaryTree(root=root)
+        target_node = rotatable_tree.find_by_index(0)
+
+        if not target_node:
+            raise self.failureException("No node at index 0 found")
+
+        rotatable_tree.rotate_right(node=target_node)
+
+        self.assertEqual(len(rotatable_tree), 5)
+        self.assertEqual(rotatable_tree.height, 2)
+        self.assertListEqual([node.value for node in rotatable_tree.traverse_tree()], [1, 2, 3, 4, 5])
+
+    def test_deeper_nested_tree_rotation(self):
+        root = BinaryTreeNode(
+            value=9,
+            left=BinaryTreeNode(
+                value=7,
+                left=BinaryTreeNode(
+                    value=3,
+                    left=BinaryTreeNode(value=2, left=BinaryTreeNode(value=1)),
+                    right=BinaryTreeNode(value=5, left=BinaryTreeNode(value=4), right=BinaryTreeNode(value=6)),
+                ),
+                right=BinaryTreeNode(value=8),
+            ),
+            right=BinaryTreeNode(
+                value=10,
+                right=BinaryTreeNode(
+                    value=12,
+                    left=BinaryTreeNode(value=11),
+                    right=BinaryTreeNode(
+                        value=13,
+                        right=BinaryTreeNode(
+                            value=17,
+                            left=BinaryTreeNode(
+                                value=15, left=BinaryTreeNode(value=14), right=BinaryTreeNode(value=16)
+                            ),
+                        ),
+                    ),
+                ),
+            ),
+        )
+
+        rotatable_tree = RotatableOrderedBinaryTree(root=root)
+
+        if not rotatable_tree.root:
+            raise self.failureException("No root found")
+
+        self.assertEqual(len(rotatable_tree), 17)
+        self.assertEqual(rotatable_tree.height, 6)
+        self.assertListEqual(
+            [node.value for node in rotatable_tree.traverse_tree()],
+            [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17],
+        )
+
+        rotatable_tree.rotate_right(root)
+
+        self.assertEqual(len(rotatable_tree), 17)
+        self.assertEqual(rotatable_tree.height, 7)
+        self.assertListEqual(
+            [node.value for node in rotatable_tree.traverse_tree()],
+            [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17],
+        )
+        self.assertEqual(rotatable_tree.root.value, 7)
+
+        # rotatable_tree.export_to_image("before_rotation")
+        # rotatable_tree.rotate_right(node=node_15)
+        # rotatable_tree.export_to_image("after_rotation")
+
+    def test_rotate_left(self):
+        root = BinaryTreeNode(
+            value=2,
+            left=BinaryTreeNode(value=1),
+            right=BinaryTreeNode(
+                value=4, left=BinaryTreeNode(value=3), right=BinaryTreeNode(value=5, right=BinaryTreeNode(value=6))
+            ),
+        )
+
+        rotatable_tree = RotatableOrderedBinaryTree(root=root)
+
+        self.assertEqual(len(rotatable_tree), 6)
+        self.assertEqual(rotatable_tree.height, 3)
+        self.assertListEqual(
+            [node.value for node in rotatable_tree.traverse_tree()],
+            [1, 2, 3, 4, 5, 6],
+        )
+
+        node_4 = rotatable_tree.find_node_by_value(value=4)
+
+        if not node_4:
+            raise self.failureException("Node 4 not found")
+
+        rotatable_tree.rotate_left(node=node_4)
+        rotatable_tree.rotate_left(node=root)
+
+        self.assertEqual(len(rotatable_tree), 6)
+        self.assertEqual(rotatable_tree.height, 3)
+        self.assertListEqual(
+            [node.value for node in rotatable_tree.traverse_tree()],
+            [1, 2, 3, 4, 5, 6],
+        )
