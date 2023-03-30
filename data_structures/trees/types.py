@@ -112,8 +112,8 @@ class BinaryTreeNode(Generic[T]):
         self._recalculate_subtree_size(node)
 
     def _recalculate_subtree_height(self, node: "BinaryTreeNode[T]"):
-        left_subtree_height = node.left._height if node.left else 0
-        right_subtree_height = node.right._height if node.right else 0
+        left_subtree_height = node.left.height if node.left else 0
+        right_subtree_height = node.right.height if node.right else 0
 
         new_height = max(left_subtree_height, right_subtree_height) + 1 if node.right or node.left else 0
 

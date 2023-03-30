@@ -1,7 +1,7 @@
 from typing import Union
 from .linked_list import DoublyLinkedList, Node
 from .hash_table import ChainingHashTable
-from .trees.binary_tree import OrderedBinaryTree, BinaryTreeNode, RotatableOrderedBinaryTree
+from .trees.binary_tree import OrderedBinaryTree, BinaryTreeNode, RotatableOrderedBinaryTree, AVLTree
 from unittest import TestCase as UnitTestCase
 from math import floor
 
@@ -467,7 +467,8 @@ class DeleteNodeOnOrderedBinaryTreeTest(UnitTestCase):
         self.assertListEqual([node.value for node in right_only_binary_tree.traverse_tree()], [2, 3])
 
         # Deleting all the nodes of the tree
-        right_only_binary_tree.delete_node_by_value(2).delete_node_by_value(3)
+        right_only_binary_tree.delete_node_by_value(2)
+        right_only_binary_tree.delete_node_by_value(3)
 
         self.assertEqual(len(right_only_binary_tree), 0)
         self.assertEqual(right_only_binary_tree.height, 0)
@@ -721,10 +722,6 @@ class RotateOnRotatableOrderedBinaryTreeTest(UnitTestCase):
         )
         self.assertEqual(rotatable_tree.root.value, 7)
 
-        # rotatable_tree.export_to_image("before_rotation")
-        # rotatable_tree.rotate_right(node=node_15)
-        # rotatable_tree.export_to_image("after_rotation")
-
     def test_rotate_left(self):
         root = BinaryTreeNode(
             value=2,
@@ -756,4 +753,85 @@ class RotateOnRotatableOrderedBinaryTreeTest(UnitTestCase):
         self.assertListEqual(
             [node.value for node in rotatable_tree.traverse_tree()],
             [1, 2, 3, 4, 5, 6],
+        )
+
+
+class AVLTreeTest(UnitTestCase):
+    def test_avl_tree(self):
+        root = BinaryTreeNode(value="M")
+
+        avl_tree = AVLTree(root=root)
+
+        if not avl_tree.root:
+            raise self.failureException("No root at AVL Tree")
+
+        self.assertEqual(avl_tree.root.value, "M")
+        self.assertEqual(avl_tree.height, 0)
+        self.assertEqual(len(avl_tree), 1)
+        self.assertListEqual(
+            [node.value for node in avl_tree.traverse_tree()],
+            ["M"],
+        )
+
+        avl_tree.insert_after_by_value(value="N", after_value="M")
+
+        self.assertEqual(avl_tree.root.value, "M")
+        self.assertEqual(avl_tree.height, 1)
+        self.assertEqual(len(avl_tree), 2)
+        self.assertListEqual(
+            [node.value for node in avl_tree.traverse_tree()],
+            ["M", "N"],
+        )
+
+        avl_tree.insert_after_by_value(value="O", after_value="N")
+
+        self.assertEqual(avl_tree.root.value, "N")
+        self.assertEqual(avl_tree.height, 1)
+        self.assertEqual(len(avl_tree), 3)
+        self.assertListEqual(
+            [node.value for node in avl_tree.traverse_tree()],
+            ["M", "N", "O"],
+        )
+
+        avl_tree.insert_before_by_value(value="L", before_value="M")
+        avl_tree.insert_before_by_value(value="K", before_value="L")
+
+        self.assertEqual(avl_tree.root.value, "N")
+        self.assertEqual(avl_tree.height, 2)
+        self.assertEqual(len(avl_tree), 5)
+        self.assertListEqual(
+            [node.value for node in avl_tree.traverse_tree()],
+            ["K", "L", "M", "N", "O"],
+        )
+
+        avl_tree.insert_after_by_value(value="Q", after_value="O")
+        avl_tree.insert_before_by_value(value="P", before_value="Q")
+
+        self.assertEqual(avl_tree.root.value, "N")
+        self.assertEqual(avl_tree.height, 2)
+        self.assertEqual(len(avl_tree), 7)
+        self.assertListEqual(
+            [node.value for node in avl_tree.traverse_tree()],
+            ["K", "L", "M", "N", "O", "P", "Q"],
+        )
+
+        avl_tree.insert_before_by_value(value="H", before_value="K")
+        avl_tree.insert_after_by_value(value="I", after_value="H")
+
+        self.assertEqual(avl_tree.root.value, "N")
+        self.assertEqual(avl_tree.height, 3)
+        self.assertEqual(len(avl_tree), 9)
+        self.assertListEqual(
+            [node.value for node in avl_tree.traverse_tree()],
+            ["H", "I", "K", "L", "M", "N", "O", "P", "Q"],
+        )
+
+        avl_tree.insert_before_by_value(value="A", before_value="H")
+
+        self.assertEqual(avl_tree.root.value, "N")
+        self.assertEqual(avl_tree.height, 3)
+        self.assertEqual(len(avl_tree), 10)
+        self.assertListEqual(
+            [node.value for node in avl_tree.traverse_tree()],
+            ["A", "H", "I", "K", "L", "M", "N", "O", "P", "Q"],
         )

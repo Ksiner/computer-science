@@ -172,6 +172,11 @@ class OrderedBinaryTree(Generic[T], BinaryTreeBase[T]):
 
         return self.insert_after(value=value, after_node=node_after)
 
+    def insert_before_by_value(self, value: T, before_value: T) -> Union[BinaryTreeNode[T], None]:
+        node_before = self.find_node_by_value(value=before_value)
+
+        return self.insert_before(value=value, before_node=node_before)
+
     def insert_after(self, value: T, after_node: Union[BinaryTreeNode[T], None]) -> Union[BinaryTreeNode[T], None]:
         if not after_node:
             return None
@@ -187,22 +192,39 @@ class OrderedBinaryTree(Generic[T], BinaryTreeBase[T]):
 
         return new_node
 
-    def delete_node_by_value(self, value: T) -> "OrderedBinaryTree[T]":
+    def insert_before(self, value: T, before_node: Union[BinaryTreeNode[T], None]) -> Union[BinaryTreeNode[T], None]:
+        if not before_node:
+            return None
+
+        new_node = BinaryTreeNode(value=value)
+
+        if not before_node.left:
+            before_node.left = new_node
+        else:
+            target_node = self.find_last_subtree_node(before_node.left)
+            if target_node:
+                target_node.right = new_node
+
+        return new_node
+
+    def delete_node_by_value(self, value: T) -> Union[BinaryTreeNode[T], None]:
         target_node = self.find_node_by_value(value=value)
 
         return self.delete_node(target_node)
 
-    def delete_node(self, node: Union[BinaryTreeNode[T], None]) -> "OrderedBinaryTree[T]":
+    def delete_node(self, node: Union[BinaryTreeNode[T], None]) -> Union[BinaryTreeNode[T], None]:
         if not node:
-            return self
+            return None
+
+        parent_node = node.parent
 
         # Node is a leaf node
         if not node.left and not node.right:
             # Root node
-            if not node.parent:
+            if not parent_node:
                 self._root = None
             else:
-                node.parent.delete_child(node)
+                parent_node.delete_child(node)
         else:
             next_node: BinaryTreeNode[T] | None = None
 
@@ -217,7 +239,7 @@ class OrderedBinaryTree(Generic[T], BinaryTreeBase[T]):
                 next_node.value = tmp_val
                 return self.delete_node(next_node)
 
-        return self
+        return parent_node
 
     def export_to_image(self, filename: Union[str, None] = None):
         if not self._root:
@@ -229,9 +251,6 @@ class OrderedBinaryTree(Generic[T], BinaryTreeBase[T]):
 
         while len(queue) > 0:
             node = queue.popleft()
-            print(
-                "in loop", node.value, node.left.value if node.left else None, node.right.value if node.right else None
-            )
 
             if node.left:
                 queue.append(node.left)
@@ -303,3 +322,67 @@ class RotatableOrderedBinaryTree(OrderedBinaryTree[T]):
             pivot.left = node
 
         return self
+
+
+class AVLTree(RotatableOrderedBinaryTree[T]):
+    def __init__(self, root: Union[BinaryTreeNode[T], None] = None) -> None:
+        super().__init__(root)
+        self._root = root
+
+    def insert_after(self, value: T, after_node: Union[BinaryTreeNode[T], None]) -> Union[BinaryTreeNode[T], None]:
+        new_node = super().insert_after(value, after_node)
+
+        if new_node and new_node.parent:
+            self._balance_subtree(node=new_node.parent)
+
+        return new_node
+
+    def insert_before(self, value: T, before_node: Union[BinaryTreeNode[T], None]) -> Union[BinaryTreeNode[T], None]:
+        new_node = super().insert_before(value, before_node)
+
+        if new_node and new_node.parent:
+            self._balance_subtree(node=new_node.parent)
+
+        return new_node
+
+    def delete_node(self, node: Union[BinaryTreeNode[T], None]) -> Union[BinaryTreeNode[T], None]:
+        parent_node = super().delete_node(node)
+
+        if parent_node:
+            self._balance_subtree(node=parent_node)
+
+        return parent_node
+
+    def _get_node_balance_factor(self, node: BinaryTreeNode[T]):
+        left_subtree_height = node.left.height + 1 if node.left else 0
+        right_subtree_height = node.right.height + 1 if node.right else 0
+
+        return right_subtree_height - left_subtree_height
+
+    def _balance_subtree(self, node: BinaryTreeNode[T]):
+        if not (node.left or node.right):
+            return
+
+        balance_factor = self._get_node_balance_factor(node=node)
+
+        if balance_factor < -1:
+            # Subtree is left-heavy - Rotating right
+            if node.left and self._get_node_balance_factor(node=node.left) > 0:
+                # Right child is right-heavy
+                # - Rotating child to left
+                self.rotate_left(node=node.left)
+
+            self.rotate_right(node=node)
+        elif balance_factor > 1:
+            # Subtree is right-heavy - Rotating left
+            if node.right and self._get_node_balance_factor(node=node.right) < 0:
+                # Right child is left-heavy
+                # - Rotating child to right
+                self.rotate_right(node=node.right)
+
+            self.rotate_left(node=node)
+
+        if not node.parent:
+            return
+
+        return self._balance_subtree(node=node.parent)
