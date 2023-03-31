@@ -2,8 +2,10 @@ from typing import TypeVar, Generic, Union
 from .types import BinaryTreeNode
 from collections import deque
 from graphviz import Graph
+import math
 
 T = TypeVar("T")
+BST = TypeVar("BST", int, float, str)
 
 
 class BinaryTreeBase(Generic[T]):
@@ -260,7 +262,7 @@ class OrderedBinaryTree(Generic[T], BinaryTreeBase[T]):
 
             graph.node(
                 name=str(node.value),
-                label=f"value={node.value}\nheight={node.height}\nsubtree_size={node.subtree_size}",
+                label=f"value={node.value}\nheight={node.height}\nsubtree_size={node.subtree_size}\ncount={node._items_count}",
             )
 
             if node.parent:
@@ -386,3 +388,56 @@ class AVLTree(RotatableOrderedBinaryTree[T]):
             return
 
         return self._balance_subtree(node=node.parent)
+
+
+class BinarySearchTree(AVLTree[BST]):
+    def __init__(self, values: list[BST]) -> None:
+        root = BinaryTreeNode(value=values[0]) if len(values) else None
+        super().__init__(root)
+        self.root = root
+
+        self.insert_many(values=values[1 : len(values)])
+
+    def insert_many(self, values: list[BST]) -> "BinarySearchTree[BST]":
+        if not len(values):
+            return self
+
+        for value in values:
+            self.insert(value=value)
+
+        return self
+
+    def insert(self, value: BST) -> BinaryTreeNode[BST]:
+        new_node = BinaryTreeNode(value=value)
+
+        if not self._root:
+            self._root = new_node
+
+            return new_node
+
+        curr_node = self._root
+
+        while True:
+            if curr_node.value < value:
+                # go to the right subtree
+                if curr_node.right:
+                    curr_node = curr_node.right
+                else:
+                    curr_node.right = new_node
+                    break
+
+            elif curr_node.value > value:
+                # go to left subtree
+                if curr_node.left:
+                    curr_node = curr_node.left
+                else:
+                    curr_node.left = new_node
+                    break
+            else:
+                curr_node.increment_items_count()
+                return curr_node
+
+        if new_node.parent:
+            self._balance_subtree(new_node.parent)
+
+        return new_node

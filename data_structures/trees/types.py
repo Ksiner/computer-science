@@ -2,6 +2,7 @@ from typing import TypeVar, Generic, Union, Any
 import json
 
 T = TypeVar("T")
+BST = TypeVar("BST", int, float, str)
 
 
 class BinaryTreeNode(Generic[T]):
@@ -16,6 +17,7 @@ class BinaryTreeNode(Generic[T]):
         self._left: Union["BinaryTreeNode[T]", None] = left
         self._right: Union["BinaryTreeNode[T]", None] = right
         self._height: int = 0
+        self._items_count: int = 1
         self._subtree_size: int = 1
 
         if self._left:
@@ -91,6 +93,15 @@ class BinaryTreeNode(Generic[T]):
     @property
     def subtree_size(self):
         return self._subtree_size
+
+    def increment_items_count(self):
+        self._items_count += 1
+        return self
+
+    def decrement_items_count(self):
+        self._items_count -= 1
+
+        return self
 
     def delete_child(self, node: Union["BinaryTreeNode[T]", None]) -> "BinaryTreeNode[T]":
         if not node:

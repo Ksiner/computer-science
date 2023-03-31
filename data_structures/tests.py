@@ -1,7 +1,7 @@
 from typing import Union
 from .linked_list import DoublyLinkedList, Node
 from .hash_table import ChainingHashTable
-from .trees.binary_tree import OrderedBinaryTree, BinaryTreeNode, RotatableOrderedBinaryTree, AVLTree
+from .trees.binary_tree import OrderedBinaryTree, BinaryTreeNode, RotatableOrderedBinaryTree, AVLTree, BinarySearchTree
 from unittest import TestCase as UnitTestCase
 from math import floor
 
@@ -835,3 +835,29 @@ class AVLTreeTest(UnitTestCase):
             [node.value for node in avl_tree.traverse_tree()],
             ["A", "H", "I", "K", "L", "M", "N", "O", "P", "Q"],
         )
+
+
+class BinarySearchTreeTests(UnitTestCase):
+    def test_binary_search_tree_composition(self):
+        bst = BinarySearchTree(values=[1, 17, 321, 21, 2, 1, 75, 29, 12, 37, 8, 8, 1, 2, 6])
+
+        bst.insert(555)
+        bst.insert(320)
+        bst.insert(319)
+        bst.insert(318)
+        bst.insert(556)
+        bst.insert(557)
+        bst.insert(558)
+        bst.insert(559)
+        bst.insert(5590)
+        bst.insert(5591)
+        bst.insert(5592)
+        bst.insert(5593)
+        bst.insert(5594)
+        bst.insert(5595)
+        bst.insert(5596)
+        bst.insert(5597)
+        bst.insert(5598)
+        bst.insert(5599)
+        bst.insert(76)
+        bst.export_to_image("bst")
