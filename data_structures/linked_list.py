@@ -152,6 +152,14 @@ class DoublyLinkedList(Generic[T]):
 
         return self
 
+    def remove_node_by_value(self, value: T):
+        target_node = self.search_node(value=value)
+
+        if not target_node:
+            return self
+
+        return self.remove_node(node=target_node)
+
     def search_node(
         self, search_func: Union[Callable[[T], bool], None] = None, value: Union[T, None] = None
     ) -> Union[Node[T], None]:

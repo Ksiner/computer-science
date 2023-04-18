@@ -860,4 +860,4 @@ class BinarySearchTreeTests(UnitTestCase):
         bst.insert(5598)
         bst.insert(5599)
         bst.insert(76)
-        bst.export_to_image("bst")
+        # bst.export_to_image("bst")

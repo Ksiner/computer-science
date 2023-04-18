@@ -2,7 +2,6 @@ from typing import TypeVar, Generic, Union
 from .types import BinaryTreeNode
 from collections import deque
 from graphviz import Graph
-import math
 
 T = TypeVar("T")
 BST = TypeVar("BST", int, float, str)
