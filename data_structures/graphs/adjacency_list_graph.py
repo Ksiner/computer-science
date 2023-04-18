@@ -1,6 +1,7 @@
 from typing import TypeVar, Generic, Union, cast, Callable
 from ..linked_list import DoublyLinkedList, Node
 from collections import deque
+from graphviz import Graph
 
 K = TypeVar("K", int, str)
 V = TypeVar("V", int, str)
@@ -56,7 +57,7 @@ class AdjacencyListGraph(Generic[K, V]):
         self._vertices: dict[K, GraphVertex[K, V]] = dict()
         self._directed = directed
 
-    def add_vertex(self, key: K, value: V) -> "AdjacencyListGraph":
+    def add_vertex(self, key: K, value: V) -> "AdjacencyListGraph[K, V]":
         if self._vertices.get(key):
             return self
 
@@ -64,7 +65,7 @@ class AdjacencyListGraph(Generic[K, V]):
 
         return self
 
-    def delete_vertex(self, key: K) -> "AdjacencyListGraph":
+    def delete_vertex(self, key: K) -> "AdjacencyListGraph[K, V]":
         if not self._vertices.get(key):
             return self
 
@@ -78,7 +79,7 @@ class AdjacencyListGraph(Generic[K, V]):
 
         return self
 
-    def add_edge(self, vertex_a_key: K, vertex_b_key: K) -> "AdjacencyListGraph":
+    def add_edge(self, vertex_a_key: K, vertex_b_key: K) -> "AdjacencyListGraph[K, V]":
         if not (self._vertices.get(vertex_a_key) and self._vertices.get(vertex_b_key)):
             return self
 
@@ -122,10 +123,10 @@ class AdjacencyListGraph(Generic[K, V]):
         process_vertex_early: Union[Callable[[GraphVertex[K, V]], None], None] = None,
         process_edge: Union[Callable[[GraphVertex[K, V], GraphEdge[K]], None], None] = None,
         process_vertex_late: Union[Callable[[GraphVertex[K, V]], None], None] = None,
+        discovered: dict[K, bool] = dict(),
+        processed: dict[K, bool] = dict(),
+        parent: dict[K, K] = dict(),
     ):
-        discovered: dict[K, bool] = dict()
-        processed: dict[K, bool] = dict()
-        parent: dict[K, K] = dict()
         queue = deque([start_from_vertex_key])
 
         discovered[start_from_vertex_key] = True
@@ -133,7 +134,7 @@ class AdjacencyListGraph(Generic[K, V]):
         while len(queue) != 0:
             vertex_key = queue.popleft()
 
-            target_vertex = self._vertices[vertex_key]
+            target_vertex = self._vertices.get(vertex_key)
 
             if not target_vertex:
                 raise ValueError(f"Trying to access the vertex that doesn't exists; vertex_key = {vertex_key}")
@@ -148,10 +149,10 @@ class AdjacencyListGraph(Generic[K, V]):
             while edge_to_process is not None:
                 edge = edge_to_process.value
 
-                if (not processed[edge.target_vertex_key] or self._directed) and process_edge:
+                if (not processed.get(edge.target_vertex_key) or self._directed) and process_edge:
                     process_edge(target_vertex, edge)
 
-                if not discovered[edge.target_vertex_key]:
+                if not discovered.get(edge.target_vertex_key):
                     discovered[edge.target_vertex_key] = True
                     parent[edge.target_vertex_key] = vertex_key
                     queue.append(edge.target_vertex_key)
@@ -160,6 +161,32 @@ class AdjacencyListGraph(Generic[K, V]):
 
             if process_vertex_late:
                 process_vertex_late(target_vertex)
+
+    def export_to_image(self, filename: Union[str, None] = None):
+        discovered: dict[K, bool] = dict()
+        graph = Graph(graph_attr=[("nodesep", "0.4"), ("ranksep", "0.5")])
+
+        def process_vertex_early(vertex: GraphVertex):
+            graph.node(name=str(vertex.key), label=f"value={vertex.value}")
+
+        def process_edge(vertex: GraphVertex, edge: GraphEdge):
+            graph.edge(tail_name=str(vertex.key), head_name=str(edge.target_vertex_key))
+
+        # Running cycle to cover case where graph has multiple components
+        for vertex in self._vertices:
+            if discovered.get(vertex):
+                continue
+
+            self.bfs(
+                start_from_vertex_key=vertex,
+                process_vertex_early=process_vertex_early,
+                process_edge=process_edge,
+                discovered=discovered,
+            )
+
+        graph.render(
+            filename=filename, format="png", directory="__generated__", view=True, overwrite_source=True, cleanup=True
+        )
 
     def __len__(self):
         return len(self._vertices)

@@ -85,3 +85,25 @@ class AdjacencyListGraphTests(UnitTestCase):
         self.assertIsNotNone(list_graph._vertices[2])
         self.assertEqual(len(list_graph._vertices[2].adjacency_list), 0)
         self.assertIsNone(list_graph._vertices[2].adjacency_list.head)
+
+    def test_bfs(self):
+        list_graph = AdjacencyListGraph[int, str]()
+        # Adding vertices
+        list_graph.add_vertex(1, "first").add_vertex(2, "second").add_vertex(3, "third").add_vertex(
+            4, "fourth"
+        ).add_vertex(5, "fifth").add_vertex(6, "sixth").add_vertex(7, "seventh").add_vertex(8, "eight")
+
+        # Adding edges
+        list_graph.add_edge(1, 8).add_edge(1, 7).add_edge(1, 2).add_edge(2, 7).add_edge(2, 3).add_edge(2, 5).add_edge(
+            5, 3
+        ).add_edge(3, 4).add_edge(5, 4).add_edge(5, 6)
+
+        discovered: dict[int, bool] = dict()
+        processed: dict[int, bool] = dict()
+        parent: dict[int, int] = dict()
+
+        list_graph.bfs(1, discovered=discovered, processed=processed, parent=parent)
+
+        self.assertDictEqual(discovered, {1: True, 2: True, 3: True, 4: True, 5: True, 6: True, 7: True, 8: True})
+        self.assertDictEqual(processed, {1: True, 2: True, 3: True, 4: True, 5: True, 6: True, 7: True, 8: True})
+        self.assertDictEqual(parent, {2: 1, 3: 2, 4: 3, 5: 2, 6: 5, 7: 1, 8: 1})
